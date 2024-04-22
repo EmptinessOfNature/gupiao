@@ -3,6 +3,7 @@ from MyTT import *
 import akshare as ak
 import glob, os
 import json
+import pandas as pd
 #支撑
 class ZhiCheng():
     def xinhao(self, C, L, H, V):
@@ -128,28 +129,28 @@ def read_ak_and_calc():
             's_4'] + res['s_5'] > 0:
             print('time:', np.array(time)[i], res)
 
-
-if __name__ == '__main__':
-    stock_dict = {'TCEHY': '2006','TQQQ': '2001','SQQQ': '2002', 'YANG': '2003', 'YINN': '2004', 'QQQ': '2005',
+def ib_data_calc():
+    stock_dict = {'TCEHY': '2006', 'TQQQ': '2001', 'SQQQ': '2002', 'YANG': '2003', 'YINN': '2004', 'QQQ': '2005',
                   'TSLA': '1001', 'MSFT': '1002', 'NVDA': '1003', 'AAPL': '1004', 'AMZN': '1005', 'TSM': '1006',
                   'NFLX': '1007', 'GOOG': '1008',
                   'META': '1009', 'ASML': '1010', 'ARKK': '1011', 'PDD': '1012'}
-        # ,'COIN': '1013'}
+    # ,'COIN': '1013'}
     stock_dict_invert = {}
-    for k,v in stock_dict.items():
-        stock_dict_invert[v]=k
+    for k, v in stock_dict.items():
+        stock_dict_invert[v] = k
     # for code in stock_dict_invert.keys():
     #     raw_json = code + '240421.json'
     #     print('raw_json',raw_json)
     #     json_2_ready_json(raw_json)
-    code = '2006'
-    with open('../data_ready/'+code+'240421.json','r') as f:
+    code = '1001'
+    with open('./data_ready/' + code + '240421.json', 'r') as f:
         raw_data = json.load(f)
-        data=pd.DataFrame(raw_data[1:], columns=raw_data[0])
+        data = pd.DataFrame(raw_data[1:], columns=raw_data[0])
         result_dianwei = data.iloc[:0].copy()
-    for dd in (17,18,19):
-        result = data[(data['dt'].str.contains("2024-04-"+str(dd)) & (data['dt'].str[11:13].astype(int) >= 21)) |(data['dt'].str.contains("2024-04-"+str(dd+1)) & (data['dt'].str[11:13].astype(int) <= 3))]
-        result=result.reset_index(drop=True)
+    for dd in (17, 18, 19):
+        result = data[(data['dt'].str.contains("2024-04-" + str(dd)) & (data['dt'].str[11:13].astype(int) >= 21)) | (
+                    data['dt'].str.contains("2024-04-" + str(dd + 1)) & (data['dt'].str[11:13].astype(int) <= 3))]
+        result = result.reset_index(drop=True)
         open = result['open']
         close = result['close']
         high = result['high']
@@ -162,11 +163,46 @@ if __name__ == '__main__':
                 continue
             res = zhicheng.xinhao(close[0:i], low[0:i], high[0:i], volme[0:i])
             for k in res.keys():
-                result.loc[i,k] = res[k]
+                result.loc[i, k] = res[k]
             if sum(res.values()) > 0:
                 print('time:', np.array(time)[i], res)
-                result_dianwei=result_dianwei._append(result.loc[i],ignore_index=True)
-    result_dianwei.insert(0,'股票代码',stock_dict_invert[code])
-    result_dianwei.to_csv('../data_calc/'+stock_dict_invert[code]+'.csv')
+                result_dianwei = result_dianwei._append(result.loc[i], ignore_index=True)
+    result_dianwei.insert(0, '股票代码', stock_dict_invert[code])
+    result_dianwei.to_csv('./data_calc/' + stock_dict_invert[code] + '.csv')
     print(1)
-    # read_ak_and_calc()
+if __name__ == '__main__':
+    code = 'NVDA'
+    file_name = './data_tdx_tmp/'+'74#'+code+'.txt'
+    with open(file_name,'r') as f:
+        lines=f.readlines()[2:-1]
+        new_lines = []
+        for line in lines:
+            line = line.strip('\n').split('\t')
+            new_line = [line[0].replace('/', '-') + ' ' + line[1][0:2] + ':' + line[1][2:4] + ':00'] + line[2:]
+            new_lines.append(new_line)
+    column_names = ['dt', 'open', 'high', 'low','close','vol','cje']
+    data = pd.DataFrame(new_lines,columns=column_names)
+    result_dianwei = data.iloc[:0].copy()
+    print(1)
+    for dd in (16,17, 18):
+        result = data[(data['dt'].str.contains("2024-04-" + str(dd)) & (data['dt'].str[11:13].astype(int) >= 21)) | (
+                    data['dt'].str.contains("2024-04-" + str(dd + 1)) & (data['dt'].str[11:13].astype(int) <= 3))]
+        result = result.reset_index(drop=True)
+        open = result['open'].astype('float')
+        close = result['close'].astype('float')
+        high = result['high'].astype('float')
+        low = result['low'].astype('float')
+        volme = result['vol'].astype('float')
+        time = result['dt']
+        zhicheng = ZhiCheng()
+        for i in range(len(open)):
+            if i == 0:
+                continue
+            res = zhicheng.xinhao(close[0:i], low[0:i], high[0:i], volme[0:i])
+            for k in res.keys():
+                result.loc[i, k] = res[k]
+            if sum(res.values()) > 0:
+                print('time:', np.array(time)[i], res)
+                result_dianwei = result_dianwei._append(result.loc[i], ignore_index=True)
+    result_dianwei.insert(0, '股票代码', code)
+    result_dianwei.to_csv('./data_tdxtmp_calc/' + code + '.csv')
