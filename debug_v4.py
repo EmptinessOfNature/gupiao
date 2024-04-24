@@ -186,7 +186,7 @@ def ib_data_calc():
     result_dianwei.to_csv('./data_calc/' + stock_dict_invert[code] + '.csv')
 
 if __name__ == '__main__':
-    code = 'AAPL'
+    code = 'NVDA'
     file_name = './data_tdx_tmp/'+'74#'+code+'.txt'
     with open(file_name,'r') as f:
         lines=f.readlines()[2:-1]
@@ -199,9 +199,8 @@ if __name__ == '__main__':
     data = pd.DataFrame(new_lines,columns=column_names)
     result_dianwei = data.iloc[:0].copy()
 
-    for dd in (16,17, 18):
-        result = data[(data['dt'].str.contains("2024-04-" + str(dd)) & (data['dt'].str[11:13].astype(int) >= 21)) | (
-                    data['dt'].str.contains("2024-04-" + str(dd + 1)) & (data['dt'].str[11:13].astype(int) <= 3))]
+    for dd in [16,17,18]:
+        result = data[(data['dt'].str.contains("2024-04-" + str(dd)))]
         result = result.reset_index(drop=True)
         open = result['open'].astype('float')
         close = result['close'].astype('float')
