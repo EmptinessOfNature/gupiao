@@ -186,7 +186,7 @@ def ib_data_calc():
     result_dianwei.to_csv('./data_calc/' + stock_dict_invert[code] + '.csv')
 
 if __name__ == '__main__':
-    code = 'AAPL'
+    code = 'TSLA'
     file_name = './data_tdx_tmp/'+'74#'+code+'.txt'
     with open(file_name,'r') as f:
         lines=f.readlines()[2:-1]
