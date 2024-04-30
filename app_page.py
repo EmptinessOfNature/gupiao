@@ -29,6 +29,12 @@ def plot_cand_volume(data, dt_breaks):
         col=1,
     )
 
+    fig.add_trace(
+        go.Scatter(x=data["dt"], y=data["vol"], showlegend=True,mode='markers', name="成交量"),
+        row=1,
+        col=1,
+    )
+
     # # 盆形底买入信号
     # data_new = data[data["XG_IN"] == 1]
     # fig.add_trace(go.Scatter(
@@ -166,6 +172,7 @@ def plot_cand_volume(data, dt_breaks):
         rangebreaks=[
             # dict(bounds=[8, 16], pattern="hour"),
             dict(bounds=[4, 21.5], pattern="hour"),
+            dict(bounds=[6, 1], pattern='day of week'),
             dict(bounds=["sat", "sun"]),
         ],
     )
