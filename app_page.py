@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-import yfinance as yf
 import matplotlib.pyplot as plt
 import akshare as ak
 from plotly.subplots import make_subplots
@@ -167,7 +166,7 @@ def plot_cand_volume(data, dt_breaks):
         rangebreaks=[
             # dict(bounds=[8, 16], pattern="hour"),
             dict(bounds=[4, 21.5], pattern="hour"),
-            # dict(bounds=[6, 1], pattern="day of week"),
+            dict(bounds=["sat", "sun"]),
         ],
     )
     hovertext = []  # 添加悬停信息
