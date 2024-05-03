@@ -10,15 +10,13 @@ from buy_sell_point import ZhiCheng
 def plot_cand_volume(data, dt_breaks):
     # Create subplots and mention plot grid size
     fig = make_subplots(
-        rows=1,
+        rows=2,
         cols=1,
         # row_heights=[1,0.5,0.5,0.5],
         shared_xaxes=True,
         vertical_spacing=0.03,
         subplot_titles=(""),
-        row_width=[
-            1,
-        ],
+        row_width=[1, 1],
     )
     # 绘制k数据
     # fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
@@ -80,10 +78,46 @@ def plot_cand_volume(data, dt_breaks):
 
     # # 盆形底买入信号
     # data_new = data[data["XG_IN"] == 1]
-    # fig.add_trace(go.Scatter(
-    #     x=data_new["dt"],
-    #     y=data_new["XG_IN"] * data_new["close"] * 1.01, mode='markers', text='👇', marker={"color": "green"},showlegend=True,name='盆型底'), row=1,
-    #     col=1)  # 散点大小
+    fig.add_trace(
+        go.Scatter(
+            x=data["dt"],
+            y=data["close"] / 1.5,
+            marker={"color": "green"},
+            showlegend=True,
+            name="JW",
+        ),
+        row=2,
+        col=1,
+    )  # 散点大小
+    for i in range(len(data.dt)):
+        if data.close[i] / 1.5 >= 122 and i%5==0:
+            fig.add_trace(
+                go.Scatter(
+                    x=[data.dt[i], data.dt[i]],
+                    y=[122, data.close[i] / 1.5-0.01],
+                    mode="lines",
+                    marker={"color": "red"},
+                    showlegend=False,
+                    hoverinfo='skip',
+                    name="JW",
+                ),
+                row=2,
+                col=1,
+            )
+        if data.close[i] / 1.5 <= 120 and i%5==0:
+            fig.add_trace(
+                go.Scatter(
+                    x=[data.dt[i], data.dt[i]],
+                    y=[120, data.close[i] / 1.5-0.01],
+                    mode="lines",
+                    marker={"color": "green"},
+                    showlegend=False,
+                    hoverinfo='skip',
+                    name="JW",
+                ),
+                row=2,
+                col=1,
+            )
     #
     # data_new2 = data[data["XG_OUT"] * -1 == 1]
     # fig.add_trace(go.Scatter(
