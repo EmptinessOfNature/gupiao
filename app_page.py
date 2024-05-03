@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import akshare as ak
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+from buy_sell_point import ZhiCheng
+
 
 def plot_cand_volume(data, dt_breaks):
     # Create subplots and mention plot grid size
@@ -14,7 +16,9 @@ def plot_cand_volume(data, dt_breaks):
         shared_xaxes=True,
         vertical_spacing=0.03,
         subplot_titles=(""),
-        row_width=[1,],
+        row_width=[
+            1,
+        ],
     )
     # 绘制k数据
     # fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
@@ -24,16 +28,55 @@ def plot_cand_volume(data, dt_breaks):
 
     # 走势图
     fig.add_trace(
-        go.Scatter(x=data["dt"], y=data["close"], showlegend=True, name="分时图"),
+        go.Scatter(
+            x=data["dt"],
+            y=data["close"],
+            # marker=dict(
+            # symbol=icons[icon]['symbol'],  # 使用自定义符号
+            # size=icons[icon]['size'],  # 可调整符号大小
+            # color='#0000FF',  # 设置颜色
+            # ),
+            showlegend=True,
+            name="分时图",
+        ),
         row=1,
         col=1,
     )
+    # import base64
+    # path = './res/xiajian1.png'
+    # with open(path, "rb") as image_file:
+    #     encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+    # b64_icon =encoded_string
 
-    fig.add_trace(
-        go.Scatter(x=data["dt"], y=data["vol"], showlegend=True,mode='markers', name="成交量"),
-        row=1,
-        col=1,
-    )
+    icons = {
+        "icon_1": {"symbol": "triangle-up", "size": 10, "color": "#00FF00"},
+        "icon_2": {"symbol": "triangle-down", "size": 10, "color": "#AA0000"},
+        "icon_11": {"symbol": "triangle-up-open", "size": 10, "color": "#00FF00"},
+        "icon_12": {"symbol": "triangle-down", "size": 10, "color": "red"},
+        "icon_13": {"symbol": "triangle-up-dot", "size": 10, "color": "#00FF00"},
+        "icon_41": {"symbol": "triangle-down", "size": 10, "color": "red"},
+        "icon_34": {"symbol": "triangle-up-open-dot", "size": 10, "color": "#00FF00"},
+        "icon_35": {"symbol": "triangle-down", "size": 10, "color": "#FF0000"},
+        "icon_38": {"symbol": "triangle-up", "size": 10, "color": "#00AA00"},
+        "icon_39": {"symbol": "triangle-down", "size": 10, "color": "red"},
+    }
+    for icon in icons.keys():
+        fig.add_trace(
+            go.Scatter(
+                x=data["dt"],
+                y=data[icon] * (data["close"] - 0.1),
+                showlegend=True,
+                mode="markers",
+                marker=dict(
+                    symbol=icons[icon]["symbol"],  # 使用自定义符号
+                    size=icons[icon]["size"],  # 可调整符号大小
+                    color=icons[icon]["color"],  # 设置颜色
+                ),
+                name=icon,
+            ),
+            row=1,
+            col=1,
+        )
 
     # # 盆形底买入信号
     # data_new = data[data["XG_IN"] == 1]
@@ -172,7 +215,7 @@ def plot_cand_volume(data, dt_breaks):
         rangebreaks=[
             # dict(bounds=[8, 16], pattern="hour"),
             dict(bounds=[4, 21.5], pattern="hour"),
-            dict(bounds=[6, 1], pattern='day of week'),
+            dict(bounds=[6, 1], pattern="day of week"),
             dict(bounds=["sat", "sun"]),
         ],
     )
@@ -186,30 +229,29 @@ def plot_cand_volume(data, dt_breaks):
     fig.update_layout(hovermode="x unified")
 
     return fig
+
+
 # 设置Streamlit页面标题
-st.title('股票分时图展示')
+st.title("股票分时图展示")
 
 # 获取用户输入的股票代码
-ticker_symbol = st.text_input('请输入股票代码:', '105.TSLA')
+ticker_symbol = st.text_input("请输入股票代码:", "105.TSLA")
 
 # 使用yfinance获取股票数据
-if st.button('获取数据'):
+if st.button("获取数据"):
     try:
         stock = ak.stock_us_hist_min_em(symbol=ticker_symbol)
         hist = ak.stock_us_hist_min_em(symbol=ticker_symbol)
-        hist.columns=['dt','open','close','high','low','vol','cje','zxj']
-        hist.dt=pd.to_datetime(hist.dt)
+        hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
         print(hist)
-        fig = plot_cand_volume(hist,'')
-        st.write(f'获取到 {ticker_symbol} 的数据')
+        zhicheng = ZhiCheng()
+        hist = zhicheng.calc_point(hist, date_mode="ib")
+        fig = plot_cand_volume(hist, "")
+        st.write(f"获取到 {ticker_symbol} 的数据")
     except Exception as e:
-        st.error(f'无法获取 {ticker_symbol} 的数据: {e}')
+        st.error(f"无法获取 {ticker_symbol} 的数据: {e}")
         hist = None
 
     # 如果成功获取到数据，绘制并展示分时图
 if fig is not None:
     st.plotly_chart(fig)
-
-
-
-
