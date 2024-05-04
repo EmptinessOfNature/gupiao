@@ -16,7 +16,7 @@ def plot_cand_volume(data, dt_breaks):
         shared_xaxes=True,
         vertical_spacing=0.03,
         subplot_titles=(""),
-        row_width=[1, 1],
+        row_width=[1, 2],
     )
     # 绘制k数据
     # fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
@@ -76,7 +76,7 @@ def plot_cand_volume(data, dt_breaks):
             col=1,
         )
 
-    # # 盆形底买入信号
+    # # 盆形底JW5分钟信号图
     # data_new = data[data["XG_IN"] == 1]
     fig.add_trace(
         go.Scatter(
@@ -245,12 +245,15 @@ def plot_cand_volume(data, dt_breaks):
     # fig.update_xaxes(tickformat="%Y-%m-%d %H:%M:%S", rangebreaks=[dict(bounds=[11.5, 13], pattern="hour"),dict(bounds=[15, 9.5], pattern="hour"),dict(bounds=[6,1], pattern="day of week")])
 
     fig.update_xaxes(
-        tickformat="%Y-%m-%d %H:%M:%S",
+        # tickformat="%Y-%m-%d %H:%M:%S",
+        tickformat="%m-%d %H:%M",
+        showgrid=True,
         rangebreaks=[
             # dict(bounds=[8, 16], pattern="hour"),
             dict(bounds=[4, 21.5], pattern="hour"),
             dict(bounds=[6, 1], pattern="day of week"),
             dict(bounds=["sat", "sun"]),
+
         ],
     )
     hovertext = []  # 添加悬停信息
@@ -266,24 +269,34 @@ def plot_cand_volume(data, dt_breaks):
 
 
 # 设置Streamlit页面标题
+fig = None
 st.title("股票分时图展示")
 
 # 获取用户输入的股票代码
-ticker_symbol = st.text_input("请输入股票代码:", "105.TSLA")
+# ticker_symbol = st.text_input("请输入股票代码:", "105.TSLA")
+
+skt_options = ['TSLA', 'MSFT', 'NVDA', '其他']
+
+# 使用st.selectbox创建下拉选择菜单
+selected_option = st.selectbox('请选择一个选项:', skt_options)
+# 显示用户所选的选项
+st.write('你选择了:', selected_option)
+
+code_symbols = {'TSLA':'105.TSLA','MSFT':'105.MSFT','NVDA':'105.NVDA'}
 
 # 使用yfinance获取股票数据
 if st.button("获取数据"):
     try:
-        stock = ak.stock_us_hist_min_em(symbol=ticker_symbol)
-        hist = ak.stock_us_hist_min_em(symbol=ticker_symbol)
+        stock = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
+        hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
         hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
         print(hist)
         zhicheng = ZhiCheng()
         hist = zhicheng.calc_point(hist, date_mode="ib")
         fig = plot_cand_volume(hist, "")
-        st.write(f"获取到 {ticker_symbol} 的数据")
+        st.write(f"获取到 {code_symbols[selected_option]} 的数据")
     except Exception as e:
-        st.error(f"无法获取 {ticker_symbol} 的数据: {e}")
+        st.error(f"无法获取 {code_symbols[selected_option]} 的数据: {e}")
         hist = None
 
     # 如果成功获取到数据，绘制并展示分时图
