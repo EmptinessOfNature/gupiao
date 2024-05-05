@@ -5,6 +5,7 @@ import akshare as ak
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from buy_sell_point import ZhiCheng
+from ib_req import get_data_ib
 
 
 def plot_cand_volume(data, dt_breaks):
@@ -287,9 +288,10 @@ code_symbols = {'TSLA':'105.TSLA','MSFT':'105.MSFT','NVDA':'105.NVDA'}
 # 使用yfinance获取股票数据
 if st.button("获取数据"):
     try:
-        stock = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
-        hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
-        hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
+        # hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
+        # hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
+        # print(hist)
+        hist = get_data_ib()
         print(hist)
         zhicheng = ZhiCheng()
         hist = zhicheng.calc_point(hist, date_mode="ib")
