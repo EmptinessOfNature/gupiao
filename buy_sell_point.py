@@ -137,6 +137,21 @@ class ZhiCheng:
         CONST_dict = {"X1": X1_in, "Z1": Z1_in, "X_36": X_36_in, "X_37": X_37_in}
         return dict, CONST_dict
 
+    def xinhao_jw(self,C,L,H,V):
+        N1 = 45;
+        M1 = 15;
+        M2 = 15;
+        CLOSE = np.array(C)
+        HIGH = np.array(H)
+        LOW = np.array(L)
+        RSV = (CLOSE - LLV(LOW, N1)) / (HHV(HIGH, N1) - LLV(LOW, N1)) * 100;
+        K = SMA(RSV, M1, 1);
+        D = SMA(K, M2, 1);
+        JW = 3 * K - 2 * D;
+        # dict = {"k": K.tolist()[-1], "d": D.tolist()[-1], "jw": JW.tolist()[-1]}
+        dict = {"jw": JW.tolist()[-1]}
+        return dict
+
     def calc_point(self, data, date_mode="ib"):
         assert date_mode in ("ib", "tdx")
         if date_mode == "ib":  # ib的时间是正常的，过了24点dt会加一
@@ -180,8 +195,11 @@ class ZhiCheng:
                     res, CONST_dict = self.xinhao(
                         close[0:j], low[0:j], high[0:j], volme[0:j], CONST_dict
                     )
+                    res2 = self.xinhao_jw(close[0:j], low[0:j], high[0:j], volme[0:j])
                     for k in res.keys():
                         data_1d.loc[j, k] = res[k]
+                    for k in res2.keys():
+                        data_1d.loc[j,k] = res2[k]
                     if sum(res.values()) > 0:
                         print("time:", np.array(time)[j], res)
                 if i == 0:

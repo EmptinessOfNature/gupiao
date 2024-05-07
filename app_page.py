@@ -5,7 +5,8 @@ import akshare as ak
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from buy_sell_point import ZhiCheng
-from ib_req import get_data_ib
+
+# from ib_req import get_data_ib
 
 
 def plot_cand_volume(data, dt_breaks):
@@ -82,38 +83,39 @@ def plot_cand_volume(data, dt_breaks):
     fig.add_trace(
         go.Scatter(
             x=data["dt"],
-            y=data["close"] / 1.5,
+            y=data["jw"],
             marker={"color": "green"},
             showlegend=True,
             name="JW",
         ),
         row=2,
         col=1,
-    )  # 散点大小
+    )
+    # 绘制阴影
     for i in range(len(data.dt)):
-        if data.close[i] / 1.5 >= 122 and i%5==0:
+        if data.jw[i] >= 100 and i % 5 == 0:
             fig.add_trace(
                 go.Scatter(
                     x=[data.dt[i], data.dt[i]],
-                    y=[122, data.close[i] / 1.5-0.01],
+                    y=[100, data.jw[i] - 0.01],
                     mode="lines",
                     marker={"color": "red"},
                     showlegend=False,
-                    hoverinfo='skip',
+                    hoverinfo="skip",
                     name="JW",
                 ),
                 row=2,
                 col=1,
             )
-        if data.close[i] / 1.5 <= 120 and i%5==0:
+        if data.jw[i] < 0 and i % 5 == 0:
             fig.add_trace(
                 go.Scatter(
                     x=[data.dt[i], data.dt[i]],
-                    y=[120, data.close[i] / 1.5-0.01],
+                    y=[0, data.jw[i] - 0.01],
                     mode="lines",
                     marker={"color": "green"},
                     showlegend=False,
-                    hoverinfo='skip',
+                    hoverinfo="skip",
                     name="JW",
                 ),
                 row=2,
@@ -254,7 +256,6 @@ def plot_cand_volume(data, dt_breaks):
             dict(bounds=[4, 21.5], pattern="hour"),
             dict(bounds=[6, 1], pattern="day of week"),
             dict(bounds=["sat", "sun"]),
-
         ],
     )
     hovertext = []  # 添加悬停信息
@@ -276,23 +277,23 @@ st.title("股票分时图展示")
 # 获取用户输入的股票代码
 # ticker_symbol = st.text_input("请输入股票代码:", "105.TSLA")
 
-skt_options = ['TSLA', 'MSFT', 'NVDA', '其他']
+skt_options = ["TSLA", "MSFT", "NVDA", "其他"]
 
 # 使用st.selectbox创建下拉选择菜单
-selected_option = st.selectbox('请选择一个选项:', skt_options)
+selected_option = st.selectbox("请选择一个选项:", skt_options)
 # 显示用户所选的选项
-st.write('你选择了:', selected_option)
+st.write("你选择了:", selected_option)
 
-code_symbols = {'TSLA':'105.TSLA','MSFT':'105.MSFT','NVDA':'105.NVDA'}
+code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
 
 # 使用yfinance获取股票数据
 if st.button("获取数据"):
     try:
-        # hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
-        # hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
-        # print(hist)
-        hist = get_data_ib()
+        hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
+        hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
         print(hist)
+        # hist = get_data_ib()
+        # print(hist)
         zhicheng = ZhiCheng()
         hist = zhicheng.calc_point(hist, date_mode="ib")
         fig = plot_cand_volume(hist, "")
