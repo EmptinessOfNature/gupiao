@@ -148,9 +148,24 @@ class ZhiCheng:
         K = SMA(RSV, M1, 1);
         D = SMA(K, M2, 1);
         JW = 3 * K - 2 * D;
-        # dict = {"k": K.tolist()[-1], "d": D.tolist()[-1], "jw": JW.tolist()[-1]}
-        dict = {"jw": JW.tolist()[-1]}
+        dict = {"jw": JW.tolist()}
         return dict
+
+    def calc_jw(self,data):
+        data_long = data.copy(deep=True)
+        data_long.dt = pd.to_datetime(data_long.dt)
+        data_long = data_long.reset_index(drop=True)
+        open = data_long["open"].astype("float")
+        close = data_long["close"].astype("float")
+        high = data_long["high"].astype("float")
+        low = data_long["low"].astype("float")
+        volme = data_long["vol"].astype("float")
+        time = data_long["dt"]
+        res = self.xinhao_jw(close,low,high,volme)
+        for k in res.keys():
+            data_long[k] = res[k]
+        return data_long
+
 
     def calc_point(self, data, date_mode="ib"):
         assert date_mode in ("ib", "tdx")
@@ -195,11 +210,11 @@ class ZhiCheng:
                     res, CONST_dict = self.xinhao(
                         close[0:j], low[0:j], high[0:j], volme[0:j], CONST_dict
                     )
-                    res2 = self.xinhao_jw(close[0:j], low[0:j], high[0:j], volme[0:j])
+                    # res2 = self.xinhao_jw(close[0:j], low[0:j], high[0:j], volme[0:j])
                     for k in res.keys():
                         data_1d.loc[j, k] = res[k]
-                    for k in res2.keys():
-                        data_1d.loc[j,k] = res2[k]
+                    # for k in res2.keys():
+                    #     data_1d.loc[j,k] = res2[k]
                     if sum(res.values()) > 0:
                         print("time:", np.array(time)[j], res)
                 if i == 0:
@@ -209,12 +224,25 @@ class ZhiCheng:
             result.replace(0, np.nan, inplace=True)
         return result
 
+    def concat_point_jw(self,data_point,data_jw):
+        # debug使用
+        data_jw = data_jw[data_jw['dt'].dt.minute.isin([0,30])].copy(deep=True)
+
+
 
 if __name__ == "__main__":
     ticker_symbol = "105.TSLA"
-    stock = ak.stock_us_hist_min_em(symbol=ticker_symbol)
+    # stock = ak.stock_us_hist_min_em(symbol=ticker_symbol)
     hist = ak.stock_us_hist_min_em(symbol=ticker_symbol)
     hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
     zhicheng = ZhiCheng()
     ret = zhicheng.calc_point(hist, date_mode="ib")
+    # ret2 = zhicheng.calc_jw(hist)
+    data_jw5 = ret[ret['dt'].dt.minute.isin([0,5,10,15,20,25,30,35,40,45,50,55])]
+    data_jw30 =ret[ret['dt'].dt.minute.isin([0, 30])]
+    ret5=zhicheng.calc_jw(data_jw5)
+    ret30 = zhicheng.calc_jw(data_jw30)
+    ret.dt = pd.to_datetime(ret.dt)
+    merged = pd.merge(ret,data_jw5[['dt','jw']],on='dt',how='left')
+    merged['jw_fill'] = merged['jw'].ffill()
     print(ret)
