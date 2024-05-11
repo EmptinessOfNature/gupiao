@@ -224,9 +224,20 @@ class ZhiCheng:
             result.replace(0, np.nan, inplace=True)
         return result
 
-    def concat_point_jw(self,data_point,data_jw):
+    def calc_point_2_jw_1(self,ret):
         # debug使用
-        data_jw = data_jw[data_jw['dt'].dt.minute.isin([0,30])].copy(deep=True)
+        ret.dt = pd.to_datetime(ret.dt)
+        data_jw5 = ret[ret['dt'].dt.minute.isin([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])]
+        data_jw30 = ret[ret['dt'].dt.minute.isin([0, 30])]
+        ret5 = self.calc_jw(data_jw5)
+        ret30 = self.calc_jw(data_jw30)
+        jw5 = ret5[['dt', 'jw']].rename(columns={'jw': 'jw5'})
+        jw30 = ret30[['dt', 'jw']].rename(columns={'jw': 'jw30'})
+        merged = pd.merge(ret, jw5[['dt', 'jw5']], on='dt', how='left')
+        merged = pd.merge(merged, jw30[['dt', 'jw30']], on='dt', how='left')
+        merged['jw5'].ffill(inplace=True)
+        merged['jw30'].ffill(inplace=True)
+        return merged
 
 
 
@@ -237,12 +248,5 @@ if __name__ == "__main__":
     hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
     zhicheng = ZhiCheng()
     ret = zhicheng.calc_point(hist, date_mode="ib")
-    # ret2 = zhicheng.calc_jw(hist)
-    data_jw5 = ret[ret['dt'].dt.minute.isin([0,5,10,15,20,25,30,35,40,45,50,55])]
-    data_jw30 =ret[ret['dt'].dt.minute.isin([0, 30])]
-    ret5=zhicheng.calc_jw(data_jw5)
-    ret30 = zhicheng.calc_jw(data_jw30)
-    ret.dt = pd.to_datetime(ret.dt)
-    merged = pd.merge(ret,data_jw5[['dt','jw']],on='dt',how='left')
-    merged['jw_fill'] = merged['jw'].ffill()
-    print(ret)
+    ret2 = zhicheng.calc_point_2_jw_1(ret)
+    print(ret2)

@@ -12,13 +12,13 @@ from buy_sell_point import ZhiCheng
 def plot_cand_volume(data, dt_breaks):
     # Create subplots and mention plot grid size
     fig = make_subplots(
-        rows=2,
+        rows=3,
         cols=1,
         # row_heights=[1,0.5,0.5,0.5],
         shared_xaxes=True,
         vertical_spacing=0.03,
         subplot_titles=(""),
-        row_width=[1, 2],
+        row_width=[1, 1,2],
     )
     # 绘制k数据
     # fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
@@ -83,45 +83,87 @@ def plot_cand_volume(data, dt_breaks):
     fig.add_trace(
         go.Scatter(
             x=data["dt"],
-            y=data["jw"],
-            marker={"color": "green"},
+            y=data["jw5"],
+            marker={"color": "black"},
             showlegend=True,
-            name="JW",
+            name="JW5",
         ),
         row=2,
         col=1,
     )
     # 绘制阴影
     for i in range(len(data.dt)):
-        if data.jw[i] >= 100 and i % 5 == 0:
+        if data.jw5[i] >= 100 and i % 5 == 0:
             fig.add_trace(
                 go.Scatter(
                     x=[data.dt[i], data.dt[i]],
-                    y=[100, data.jw[i] - 0.01],
+                    y=[100, data.jw5[i] - 0.01],
                     mode="lines",
                     marker={"color": "red"},
                     showlegend=False,
                     hoverinfo="skip",
-                    name="JW",
+                    name="JW5",
                 ),
                 row=2,
                 col=1,
             )
-        if data.jw[i] < 0 and i % 5 == 0:
+        if data.jw5[i] < 0 and i % 5 == 0:
             fig.add_trace(
                 go.Scatter(
                     x=[data.dt[i], data.dt[i]],
-                    y=[0, data.jw[i] - 0.01],
+                    y=[0, data.jw5[i] - 0.01],
                     mode="lines",
                     marker={"color": "green"},
                     showlegend=False,
                     hoverinfo="skip",
-                    name="JW",
+                    name="JW5",
                 ),
                 row=2,
                 col=1,
             )
-    #
+    # 30分钟jw线
+    fig.add_trace(
+        go.Scatter(
+            x=data["dt"],
+            y=data["jw30"],
+            marker={"color": "black"},
+            showlegend=True,
+            name="JW30",
+        ),
+        row=3,
+        col=1,
+    )
+    # 绘制阴影
+    for i in range(len(data.dt)):
+        if data.jw30[i] >= 100 and i % 5 == 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=[data.dt[i], data.dt[i]],
+                    y=[100, data.jw30[i] - 0.01],
+                    mode="lines",
+                    marker={"color": "red"},
+                    showlegend=False,
+                    hoverinfo="skip",
+                    name="JW30",
+                ),
+                row=3,
+                col=1,
+            )
+        if data.jw30[i] < 0 and i % 5 == 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=[data.dt[i], data.dt[i]],
+                    y=[0, data.jw30[i] - 0.01],
+                    mode="lines",
+                    marker={"color": "green"},
+                    showlegend=False,
+                    hoverinfo="skip",
+                    name="JW30",
+                ),
+                row=3,
+                col=1,
+            )
+
     # data_new2 = data[data["XG_OUT"] * -1 == 1]
     # fig.add_trace(go.Scatter(
     #     x=data_new2["dt"],
@@ -296,11 +338,12 @@ if st.button("获取数据"):
         # print(hist)
         zhicheng = ZhiCheng()
         hist = zhicheng.calc_point(hist, date_mode="ib")
-        fig = plot_cand_volume(hist, "")
+        hist2 = zhicheng.calc_point_2_jw_1(hist)
+        fig = plot_cand_volume(hist2, "")
         st.write(f"获取到 {code_symbols[selected_option]} 的数据")
     except Exception as e:
         st.error(f"无法获取 {code_symbols[selected_option]} 的数据: {e}")
-        hist = None
+        hist2 = None
 
     # 如果成功获取到数据，绘制并展示分时图
 if fig is not None:
