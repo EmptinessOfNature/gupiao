@@ -10,7 +10,7 @@ def ib_2_csv(hist_data):
     lines=[['dt','open','close','high','low','vol']]
     for i in range(hist_data.__len__()):
         lines.append([hist_data[i].date[0:17],client.hist_data[i].open,client.hist_data[i].close,client.hist_data[i].high,client.hist_data[i].low,str(client.hist_data[i].volume)])
-    ret = pd.DataFrame(lines)
+    ret = pd.DataFrame(lines[1:],columns=lines[0])
     return ret
 
 
@@ -30,6 +30,7 @@ while True:
     req_id = 100
     file_2_write = './data_server/'+now.replace(' ','').replace(':','')[0:8]+'_'+now.replace(' ','').replace(':','')[8:12]+'.csv'
     if not os.path.exists(file_2_write):
+        client.clear_hist_data()
         client.reqHistoricalData(
             req_id, contract, now, "1 w", "1 min", "TRADES", False, 1, False, []
         )

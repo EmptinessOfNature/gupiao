@@ -125,6 +125,9 @@ class SimpleClient(EWrapper, EClient):
         print('realtimeBar:{},time:{} - Opening : {},high :{},low :{},close :{},volume :{},WAP :{},count :{}'.format(
             reqId, datetime.fromtimestamp(time), open, high, low, close, volume, WAP, count))
 
+    def clear_hist_data(self):
+        self.hist_data=[]
+
     @iswrapper
     def historicalData(self, reqId: int, bar):
         if len(self.hist_data)>10000:
