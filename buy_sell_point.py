@@ -227,8 +227,14 @@ class ZhiCheng:
     def calc_point_2_jw_1(self,ret):
         # debug使用
         ret.dt = pd.to_datetime(ret.dt)
-        data_jw5 = ret[ret['dt'].dt.minute.isin([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])]
-        data_jw30 = ret[ret['dt'].dt.minute.isin([0, 30])]
+        # data_jw5 = ret[ret['dt'].dt.minute.isin([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])]
+        data_jw5 = ret.copy()
+        data_jw5['group'] = data_jw5.index // 5
+        data_jw5 = data_jw5.groupby('group').agg({'dt':'last','vol': 'sum', 'open': 'first', 'close': 'last','high':'max','low':'min'})
+        # data_jw30 = ret[ret['dt'].dt.minute.isin([0, 30])]
+        data_jw30 = ret.copy()
+        data_jw30['group'] = data_jw30.index // 30
+        data_jw30 = data_jw30.groupby('group').agg({'dt':'last','vol': 'sum', 'open': 'first', 'close': 'last','high':'max','low':'min'})
         ret5 = self.calc_jw(data_jw5)
         ret30 = self.calc_jw(data_jw30)
         jw5 = ret5[['dt', 'jw']].rename(columns={'jw': 'jw5'})
