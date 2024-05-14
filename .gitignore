@@ -7,3 +7,7 @@
 /__pycache__
 *.pyc
 /data_server
+/.idea
+/build
+/dist
+app_page.spec
