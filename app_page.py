@@ -357,6 +357,7 @@ def parse_req_list(code,s_date):
     ret = []
     for d in date_range:
         ret.append('./data_server/'+code+'/'+d.strftime("%Y%m%d")+'.csv')
+    # “TSLA/20240510.csv,TSLA/20240511.csv”
     return ret
 
 def req_merge_data(req_data_list):
