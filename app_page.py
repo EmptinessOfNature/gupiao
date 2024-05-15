@@ -352,14 +352,16 @@ def plot_kline(data, dt_breaks):
 def parse_req_list(code,s_date):
     # 定义起始和终止日期
     start_date = s_date.strftime("%Y-%m-%d")
-    end_date =datetime.datetime.now().strftime("%Y-%m-%d")
+    end_date =(datetime.datetime.now()+datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
     # 使用pandas的date_range生成日期序列
     date_range = pd.date_range(start=start_date, end=end_date, inclusive='both')
     ret = []
+    ret2 = ""
     for d in date_range:
         ret.append('./data_server/'+code+'/'+d.strftime("%Y%m%d")+'.csv')
+        ret2 += code+'/'+d.strftime("%Y%m%d")+','
     # “TSLA/20240510.csv,TSLA/20240511.csv”
-    return ret
+    return ret,ret2[:-1]
 
 def req_merge_data(req_data_list):
     ret=""
@@ -373,6 +375,7 @@ def req_merge_data(req_data_list):
 def ftp_get_data(req_data_str):
     ftp_read = FtpRead()
     ftp_read.read(req_data_str)
+    print('读取完成',req_data_str)
     return 1
 
 
@@ -387,7 +390,7 @@ skt_options = ["TSLA", "MSFT", "NVDA", "其他"]
 
 # 使用st.selectbox创建下拉选择菜单
 selected_option = st.selectbox("请选择一个选项:", skt_options)
-s_date = st.date_input("展示起始时间")
+s_date = st.date_input("展示起始时间") + datetime.timedelta(days=-1)
 # req_data_list = parse_req_list(selected_option,s_date)
 # concated_data = req_merge_data(req_data_list)
 # st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list,"拼接后长度",concated_data.shape)
@@ -400,8 +403,8 @@ if st.button("获取数据"):
     try:
         zhicheng = ZhiCheng()
         # hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
-        ftp_get_data(req_data_str="TSLA/20240514,TSLA/20240515")
-        req_data_list = parse_req_list(selected_option, s_date)
+        req_data_list,req_data_str = parse_req_list(selected_option, s_date)
+        ftp_get_data(req_data_str=req_data_str)
         st.write("你选择了:", selected_option, ";展示起始时间:", s_date, "请求数据", req_data_list)
         hist=req_merge_data(req_data_list)
         # hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]

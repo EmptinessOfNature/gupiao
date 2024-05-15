@@ -180,7 +180,7 @@ class ZhiCheng:
             debug筛选时间
             '''
             date_list = sorted(data["dt"].dt.date.unique())
-            for i in range(len(date_list) - 1):  # 遍历所有输入data中的每个日期
+            for i in range(max(len(date_list) - 1,1)):  # 遍历所有输入data中的每个日期
                 date_1d = str(date_list[i])
                 date_1d_add1 = str(date_list[i + 1])
                 print("正在计算", str(date_1d))
