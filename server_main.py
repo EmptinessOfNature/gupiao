@@ -51,7 +51,7 @@ while True:
     ret.dt = pd.to_datetime(ret.dt)
     print(ret)
     threshold_date = pd.Timestamp(today) + datetime.timedelta(hours=13)
-    ret = ret[ret.dt >= threshold_date]
+    ret = ret[ret.dt >= threshold_date].reset_index(drop=True)
     ret.to_csv(file_2_write)
     print(file_2_write,'保存完成！')
 

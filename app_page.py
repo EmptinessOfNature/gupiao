@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 from buy_sell_point import ZhiCheng
 import datetime
 import os
+from ftp_read import FtpRead
 
 # from ib_req import get_data_ib
 
@@ -369,6 +370,11 @@ def req_merge_data(req_data_list):
             ret=pd.concat([ret,pd.read_csv(file,index_col=0)]).reset_index(drop=True)
     return ret
 
+def ftp_get_data(req_data_str):
+    ftp_read = FtpRead()
+    ftp_read.read(req_data_str)
+    return 1
+
 
 # 设置Streamlit页面标题
 fig = None
@@ -382,9 +388,9 @@ skt_options = ["TSLA", "MSFT", "NVDA", "其他"]
 # 使用st.selectbox创建下拉选择菜单
 selected_option = st.selectbox("请选择一个选项:", skt_options)
 s_date = st.date_input("展示起始时间")
-req_data_list = parse_req_list(selected_option,s_date)
-concated_data = req_merge_data(req_data_list)
-st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list,"拼接后长度",concated_data.shape)
+# req_data_list = parse_req_list(selected_option,s_date)
+# concated_data = req_merge_data(req_data_list)
+# st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list,"拼接后长度",concated_data.shape)
 
 
 code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
@@ -392,12 +398,18 @@ code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
 # 使用yfinance获取股票数据
 if st.button("获取数据"):
     try:
-        hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
-        hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
+        zhicheng = ZhiCheng()
+        # hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
+        ftp_get_data(req_data_str="TSLA/20240514,TSLA/20240515")
+        req_data_list = parse_req_list(selected_option, s_date)
+        st.write("你选择了:", selected_option, ";展示起始时间:", s_date, "请求数据", req_data_list)
+        hist=req_merge_data(req_data_list)
+        # hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
+        hist.columns = ["dt", "open", "close", "high", "low", "vol"]
         print(hist)
         # hist = get_data_ib()
         # print(hist)
-        zhicheng = ZhiCheng()
+
         hist = zhicheng.calc_point(hist, date_mode="ib")
         hist2 = zhicheng.calc_point_2_jw_1(hist)
         fig = plot_cand_volume(hist2, "")
