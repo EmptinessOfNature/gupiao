@@ -11,3 +11,5 @@
 /build
 /dist
 app_page.spec
+.idea/gupiao.iml
+.idea/misc.xml
