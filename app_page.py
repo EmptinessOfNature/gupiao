@@ -347,6 +347,17 @@ def plot_kline(data, dt_breaks):
 
     return fig
 
+def parse_req_list(code,s_date):
+    # 定义起始和终止日期
+    start_date = s_date.strftime("%Y-%m-%d")
+    end_date =datetime.datetime.now().strftime("%Y-%m-%d")
+    # 使用pandas的date_range生成日期序列
+    date_range = pd.date_range(start=start_date, end=end_date, inclusive='both')
+    ret = []
+    for d in date_range:
+        ret.append(code+'/'+d.strftime("%Y%m%d")+'.csv')
+    return ret
+
 # 设置Streamlit页面标题
 fig = None
 st.title("NB666NB")
@@ -358,8 +369,9 @@ skt_options = ["TSLA", "MSFT", "NVDA", "其他"]
 
 # 使用st.selectbox创建下拉选择菜单
 selected_option = st.selectbox("请选择一个选项:", skt_options)
-d = st.date_input("展示起始时间")
-st.write("你选择了:", selected_option,";展示起始时间:", d)
+s_date = st.date_input("展示起始时间")
+req_data_list = parse_req_list(selected_option,s_date)
+st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list)
 
 
 code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
