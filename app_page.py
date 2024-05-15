@@ -5,6 +5,7 @@ import akshare as ak
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from buy_sell_point import ZhiCheng
+import datetime
 
 # from ib_req import get_data_ib
 
@@ -311,6 +312,21 @@ def plot_cand_volume(data, dt_breaks):
 
     return fig
 
+def plot_kline(data, dt_breaks):
+    fig = make_subplots(
+        rows=1,
+        cols=1,
+        # row_heights=[1,0.5,0.5,0.5],
+        shared_xaxes=True,
+        vertical_spacing=0.03,
+        subplot_titles=(""),
+        row_width=[1],
+    )
+    # k线图
+    fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
+                    low=data["low"], close=data["close"], name=""),
+                    row=1, col=1)
+    return fig
 
 # 设置Streamlit页面标题
 fig = None
@@ -323,8 +339,9 @@ skt_options = ["TSLA", "MSFT", "NVDA", "其他"]
 
 # 使用st.selectbox创建下拉选择菜单
 selected_option = st.selectbox("请选择一个选项:", skt_options)
-# 显示用户所选的选项
-st.write("你选择了:", selected_option)
+d = st.date_input("展示起始时间")
+st.write("你选择了:", selected_option,";展示起始时间:", d)
+
 
 code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
 
@@ -340,6 +357,7 @@ if st.button("获取数据"):
         hist = zhicheng.calc_point(hist, date_mode="ib")
         hist2 = zhicheng.calc_point_2_jw_1(hist)
         fig = plot_cand_volume(hist2, "")
+        fig_kline = plot_kline(hist,"")
         st.write(f"获取到 {code_symbols[selected_option]} 的数据")
     except Exception as e:
         st.error(f"无法获取 {code_symbols[selected_option]} 的数据: {e}")
@@ -348,3 +366,4 @@ if st.button("获取数据"):
     # 如果成功获取到数据，绘制并展示分时图
 if fig is not None:
     st.plotly_chart(fig)
+    st.plotly_chart(fig_kline)
