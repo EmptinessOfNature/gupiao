@@ -6,6 +6,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from buy_sell_point import ZhiCheng
 import datetime
+import os
 
 # from ib_req import get_data_ib
 
@@ -355,8 +356,18 @@ def parse_req_list(code,s_date):
     date_range = pd.date_range(start=start_date, end=end_date, inclusive='both')
     ret = []
     for d in date_range:
-        ret.append(code+'/'+d.strftime("%Y%m%d")+'.csv')
+        ret.append('./data_server/'+code+'/'+d.strftime("%Y%m%d")+'.csv')
     return ret
+
+def req_merge_data(req_data_list):
+    ret=""
+    for file in req_data_list:
+        if ret is "":
+            ret = pd.read_csv(file,index_col=0)
+        else:
+            ret=pd.concat([ret,pd.read_csv(file,index_col=0)]).reset_index(drop=True)
+    return ret
+
 
 # 设置Streamlit页面标题
 fig = None
@@ -371,7 +382,8 @@ skt_options = ["TSLA", "MSFT", "NVDA", "其他"]
 selected_option = st.selectbox("请选择一个选项:", skt_options)
 s_date = st.date_input("展示起始时间")
 req_data_list = parse_req_list(selected_option,s_date)
-st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list)
+concated_data = req_merge_data(req_data_list)
+st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list,"拼接后长度",concated_data.shape)
 
 
 code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
