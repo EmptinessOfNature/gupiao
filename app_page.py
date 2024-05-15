@@ -21,11 +21,10 @@ def plot_cand_volume(data, dt_breaks):
         subplot_titles=(""),
         row_width=[1, 1,2],
     )
-    # 绘制k数据
-    # fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
-    #                              low=data["low"], close=data["close"], name=""),
-    #               row=1, col=1
-    #               )
+    fig.update_layout(
+        width=1000,  # 设置宽度为1000像素
+        height=600  # 设置高度为600像素
+    )
 
     # 走势图
     fig.add_trace(
@@ -326,11 +325,31 @@ def plot_kline(data, dt_breaks):
     fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
                     low=data["low"], close=data["close"], name=""),
                     row=1, col=1)
+    fig.update_yaxes(
+        showline=True,
+        linecolor="black",
+        linewidth=1,
+        gridwidth=1,
+        title={"font": {"size": 18}, "text": "", "standoff": 10},
+        automargin=True,
+    )
+    fig.update_xaxes(
+        # tickformat="%Y-%m-%d %H:%M:%S",
+        tickformat="%m-%d %H:%M",
+        showgrid=True,
+        rangebreaks=[
+            # dict(bounds=[8, 16], pattern="hour"),
+            dict(bounds=[4, 21.5], pattern="hour"),
+            dict(bounds=[6, 1], pattern="day of week"),
+            dict(bounds=["sat", "sun"]),
+        ],
+    )
+
     return fig
 
 # 设置Streamlit页面标题
 fig = None
-st.title("股票分时图展示")
+st.title("NB666NB")
 
 # 获取用户输入的股票代码
 # ticker_symbol = st.text_input("请输入股票代码:", "105.TSLA")
@@ -365,5 +384,23 @@ if st.button("获取数据"):
 
     # 如果成功获取到数据，绘制并展示分时图
 if fig is not None:
+    # 自定义CSS来尝试实现全屏和居中
+    custom_css = """
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden; /* 防止水平滚动条 */
+        display: flex;
+        justify-content: center; /* 水平居中 */
+        align-items: center; /* 垂直居中 */
+        min-height: 100vh; /* 设置最小高度为视口高度，接近全屏 */
+    }
+    .stApp {
+        max-width: 150%;
+    }
+    """
+
+    # 应用CSS
+    st.markdown(f'<style>{custom_css}</style>', unsafe_allow_html=True)
     st.plotly_chart(fig)
     st.plotly_chart(fig_kline)
