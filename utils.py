@@ -38,7 +38,7 @@ def parse_tdx_rawdata_1d(r_path,code,w_path='./data_server/'):
             )
             ]
         data_1d = data_1d.reset_index(drop=True)
-        path_to_save = w_path+code+date_1d.replace('-','')+'.csv'
+        path_to_save = w_path+code+'/'+date_1d.replace('-','')+'.csv'
         data_1d.to_csv(path_to_save)
         print(path_to_save,'保存完成')
 
