@@ -24,9 +24,12 @@ class FtpRead():
             if not os.path.exists(path):
                 os.makedirs(path)
             # 打开一个本地文件来保存下载的数据
-            with open(local_name, 'wb') as file:
-                # 使用'RETR'命令来下载文件
-                ftp.retrbinary(f'RETR {file_name}', file.write)
+            try:
+                with open(local_name, 'wb') as file:
+                    # 使用'RETR'命令来下载文件
+                    ftp.retrbinary(f'RETR {file_name}', file.write)
+            except:
+                print('ftp读取数据失败',file_name)
 
         # 断开FTP连接
         ftp.quit()
