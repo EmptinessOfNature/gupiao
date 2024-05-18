@@ -30,6 +30,7 @@ class FtpRead():
                     ftp.retrbinary(f'RETR {file_name}', file.write)
             except:
                 print('ftp读取数据失败',file_name)
+                os.remove(local_name)
 
         # 断开FTP连接
         ftp.quit()
@@ -37,4 +38,4 @@ class FtpRead():
 
 if __name__ == '__main__':
     ftp_read = FtpRead()
-    ftp_read.read("TSLA/20240514,TSLA/20240515")
+    ftp_read.read("TSLA/20240514,TSLA/202405155")
