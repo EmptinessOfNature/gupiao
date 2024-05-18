@@ -8,6 +8,7 @@ from buy_sell_point import ZhiCheng
 import datetime
 import os
 from ftp_read import FtpRead
+import ftp_read_utils
 
 # from ib_req import get_data_ib
 
@@ -366,10 +367,13 @@ def parse_req_list(code,s_date):
 def req_merge_data(req_data_list):
     ret=""
     for file in req_data_list:
-        if ret is "":
-            ret = pd.read_csv(file,index_col=0)
-        else:
-            ret=pd.concat([ret,pd.read_csv(file,index_col=0)]).reset_index(drop=True)
+        try:
+            if ret is "":
+                ret = pd.read_csv(file,index_col=0)
+            else:
+                ret=pd.concat([ret,pd.read_csv(file,index_col=0)]).reset_index(drop=True)
+        except:
+            print(file,'本地不存在文件')
     return ret
 
 def ftp_get_data(req_data_str):
@@ -396,10 +400,17 @@ s_date = st.date_input("展示起始时间") + datetime.timedelta(days=-1)
 # st.write("你选择了:", selected_option,";展示起始时间:", s_date,"请求数据",req_data_list,"拼接后长度",concated_data.shape)
 
 
+
 code_symbols = {"TSLA": "105.TSLA", "MSFT": "105.MSFT", "NVDA": "105.NVDA"}
 
+if st.button("同步数据"):
+    ftp_read = ftp_read_utils.FtpRead()
+    st.write('数据同步中')
+    ftp_read.download_path("./data_server")
+    print('文件下载成功')
+
 # 使用yfinance获取股票数据
-if st.button("获取数据"):
+if st.button("计算点位"):
     try:
         zhicheng = ZhiCheng()
         # hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])

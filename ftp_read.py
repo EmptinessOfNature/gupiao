@@ -38,4 +38,4 @@ class FtpRead():
 
 if __name__ == '__main__':
     ftp_read = FtpRead()
-    ftp_read.read("TSLA/20240514,TSLA/202405155")
+    ftp_read.read("TSLA/20240514,TSLA/20240515")
