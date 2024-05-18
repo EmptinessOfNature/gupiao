@@ -324,6 +324,10 @@ def plot_kline(data, dt_breaks):
         subplot_titles=(""),
         row_width=[1],
     )
+    fig.update_layout(
+        width=1000,  # 设置宽度为1000像素
+        height=600  # 设置高度为600像素
+    )
     # k线图
     fig.add_trace(go.Candlestick(x=data["dt"], open=data["open"], high=data["high"],
                     low=data["low"], close=data["close"], name=""),
