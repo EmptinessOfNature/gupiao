@@ -415,7 +415,7 @@ if st.button("计算点位"):
         zhicheng = ZhiCheng()
         # hist = ak.stock_us_hist_min_em(symbol=code_symbols[selected_option])
         req_data_list,req_data_str = parse_req_list(selected_option, s_date)
-        ftp_get_data(req_data_str=req_data_str)
+        # ftp_get_data(req_data_str=req_data_str)
         st.write("你选择了:", selected_option, ";展示起始时间:", s_date, "请求数据", req_data_list)
         hist=req_merge_data(req_data_list)
         # hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
