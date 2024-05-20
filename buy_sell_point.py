@@ -174,8 +174,8 @@ class ZhiCheng:
             '''
             debug筛选时间
             '''
-            threshold_date = pd.Timestamp('2024-05-01')
-            data = data[data.dt>=threshold_date]
+            # threshold_date = pd.Timestamp('2024-05-01')
+            # data = data[data.dt>=threshold_date]
             '''
             debug筛选时间
             '''
