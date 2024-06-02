@@ -3,6 +3,7 @@ import os.path
 import pandas as pd
 import numpy as np
 import warnings
+from buy_sell_point import ZhiCheng
 
 warnings.filterwarnings("ignore")
 
@@ -46,7 +47,7 @@ def parse_tdx_rawdata_1d(r_path, code, w_path="./data_server/"):
             )
             | (
                 data["dt"].str.contains(date_1d_add1)
-                & (data["dt"].str[11:13].astype(int) <= 4)
+                & (data["dt"].str[11:13].astype(int) <= 5)
             )
         ]
         data_1d = data_1d.reset_index(drop=True)
@@ -55,7 +56,7 @@ def parse_tdx_rawdata_1d(r_path, code, w_path="./data_server/"):
             .dt.tz_localize("Asia/Shanghai")
             .dt.tz_convert("utc")
             .astype("int64")
-            / 10e9
+            / 10e8
         ).astype(int)
         if len(data_1d) > 0:
             assert len(data_1d) == 390
@@ -66,8 +67,42 @@ def parse_tdx_rawdata_1d(r_path, code, w_path="./data_server/"):
             data_1d.to_csv(path_to_save)
             print(path_to_save, "保存完成")
 
+def point_calc_hist_1d(code,f_path="./data_server/",w_path="./data_ready/"):
+    def merge_data(req_data_list):
+        ret = ""
+        for file in req_data_list:
+            try:
+                if ret is "":
+                    ret = pd.read_csv(file, index_col=0)
+                else:
+                    ret = pd.concat([ret, pd.read_csv(file, index_col=0)]).reset_index(drop=True)
+            except:
+                print(file, '本地不存在文件')
+        return ret
+    csvs = sorted(os.listdir(f_path+code))
+    csvs = [f_path+code+'/'+p for p in csvs]
+    for i in range(len(csvs)):
+        data_lst5d = merge_data(csvs[max(0,i-5):i+1])
+        data_1d = merge_data([csvs[i]])
+        zhicheng = ZhiCheng()
+        hist = zhicheng.calc_point(data_1d, date_mode="ib")
+        hist['dt']=pd.to_datetime(hist['dt'])
+        hist2 = zhicheng.calc_point_2_jw_1(data_lst5d)
+        hist3 = hist2[-390:].reset_index(drop=True)
+        if not os.path.exists(w_path + code):
+            os.makedirs(w_path + code)
+            print("新建文件夹", w_path + code)
+        merged = pd.merge(hist, hist3, on='dt', how='left')
+        merged.to_csv(w_path+code+'/'+csvs[i].split('/')[-1])
+        print(csvs[i],'计算完成')
+
+
+
+
 
 if __name__ == "__main__":
-    parse_tdx_rawdata_1d(
-        r_path="./data_tdx_raw/74#AAPL.txt", code="DEBUG", w_path="./data_server/"
-    )
+    # parse_tdx_rawdata_1d(
+    #     r_path="./data_tdx_raw/74#AAPL.txt", code="DEBUG", w_path="./data_server/"
+    # )
+    point_calc_hist_1d(code = 'DEBUG')
+    print(1)
