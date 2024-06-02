@@ -1,26 +1,38 @@
+import os.path
+
 import pandas as pd
 import numpy as np
 import warnings
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
-def parse_tdx_rawdata_1d(r_path,code,w_path='./data_server/'):
-    df=pd.read_csv(r_path,sep='\t',skiprows=1,encoding='gbk')[:-1]
-    df.columns=['date','time','open','high','low','close','vol','cje']
-    df['time']=df['time'].astype(int).astype(str).str.zfill(4)
-    df['date']=df['date'].str.replace('/','-')
-    df['vol'] = df['vol'].astype(int)
-    df['tdx_dt'] = df['date'].str[:] + ' ' + df['time'].str[0:2]+':'+df['time'].str[2:4]+':00'
 
-    ret = df[['tdx_dt','open','close','high','low','vol']]
-    ret['dt']=pd.to_datetime(ret['tdx_dt'])
+def parse_tdx_rawdata_1d(r_path, code, w_path="./data_server/"):
+    # 将通达信的原始数据解析为每一天的数据，存在文件夹中
+    df = pd.read_csv(r_path, sep="\t", skiprows=1, encoding="gbk")[:-1]
+    df.columns = ["date", "time", "open", "high", "low", "close", "vol", "cje"]
+    df["time"] = df["time"].astype(int).astype(str).str.zfill(4)
+    df["date"] = df["date"].str.replace("/", "-")
+    df["vol"] = df["vol"].astype(int)
+    df["tdx_dt"] = (
+        df["date"].str[:]
+        + " "
+        + df["time"].str[0:2]
+        + ":"
+        + df["time"].str[2:4]
+        + ":00"
+    )
+
+    ret = df[["tdx_dt", "open", "close", "high", "low", "vol"]]
+    ret["dt"] = pd.to_datetime(ret["tdx_dt"])
+
     def add_day_if_before_11(time):
         if time.hour <= 11:
             return time + pd.Timedelta(days=1)
         return time
 
-    ret["dt"] = ret['dt'].apply(add_day_if_before_11)
-    data = ret[['dt','open','close','high','low','vol']]
+    ret["dt"] = ret["dt"].apply(add_day_if_before_11)
+    data = ret[["dt", "open", "close", "high", "low", "vol"]]
 
     date_list = sorted(data["dt"].dt.date.unique())
     for i in range(max(len(date_list) - 1, 1)):  # 遍历所有输入data中的每个日期
@@ -29,18 +41,33 @@ def parse_tdx_rawdata_1d(r_path,code,w_path='./data_server/'):
         data.dt = data.dt.astype("str")
         data_1d = data[
             (
-                    data["dt"].str.contains(date_1d)
-                    & (data["dt"].str[11:13].astype(int) >= 20)
+                data["dt"].str.contains(date_1d)
+                & (data["dt"].str[11:13].astype(int) >= 20)
             )
             | (
-                    data["dt"].str.contains(date_1d_add1)
-                    & (data["dt"].str[11:13].astype(int) <= 4)
+                data["dt"].str.contains(date_1d_add1)
+                & (data["dt"].str[11:13].astype(int) <= 4)
             )
-            ]
+        ]
         data_1d = data_1d.reset_index(drop=True)
-        path_to_save = w_path+code+'/'+date_1d.replace('-','')+'.csv'
-        data_1d.to_csv(path_to_save)
-        print(path_to_save,'保存完成')
+        data_1d["ts"] = (
+            pd.to_datetime(data_1d["dt"], utc=False)
+            .dt.tz_localize("Asia/Shanghai")
+            .dt.tz_convert("utc")
+            .astype("int64")
+            / 10e9
+        ).astype(int)
+        if len(data_1d) > 0:
+            assert len(data_1d) == 390
+            if not os.path.exists(w_path + code):
+                os.makedirs(w_path + code)
+                print("新建文件夹", w_path + code)
+            path_to_save = w_path + code + "/" + date_1d.replace("-", "") + ".csv"
+            data_1d.to_csv(path_to_save)
+            print(path_to_save, "保存完成")
 
-if __name__=="__main__":
-    parse_tdx_rawdata_1d(r_path='./data_tdx_raw/74#TSLA.txt',code='TSLA',w_path ='./data_server/' )
+
+if __name__ == "__main__":
+    parse_tdx_rawdata_1d(
+        r_path="./data_tdx_raw/74#AAPL.txt", code="DEBUG", w_path="./data_server/"
+    )
