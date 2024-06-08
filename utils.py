@@ -102,7 +102,7 @@ def point_calc_hist_1d(code,f_path="./data_server/",w_path="./data_ready/"):
 
 if __name__ == "__main__":
     # parse_tdx_rawdata_1d(
-    #     r_path="./data_tdx_raw/74#AAPL.txt", code="DEBUG", w_path="./data_server/"
+    #     r_path="./data_tdx_raw/74#TQQQ.txt", code="TQQQ", w_path="./data_server/"
     # )
-    point_calc_hist_1d(code = 'DEBUG')
-    print(1)
+    point_calc_hist_1d(code = 'TQQQ')
+    # print(1)
