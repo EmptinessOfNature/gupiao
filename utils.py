@@ -81,18 +81,22 @@ def point_calc_hist_1d(code,f_path="./data_server/",w_path="./data_ready/"):
         return ret
     csvs = sorted(os.listdir(f_path+code))
     csvs = [f_path+code+'/'+p for p in csvs]
-    for i in range(len(csvs)):
+    for i in range(500,len(csvs)):
         data_lst5d = merge_data(csvs[max(0,i-5):i+1])
+        data_lst2d = merge_data(csvs[max(0, i - 1):i + 1])
         data_1d = merge_data([csvs[i]])
         zhicheng = ZhiCheng()
         hist = zhicheng.calc_point(data_1d, date_mode="ib")
         hist['dt']=pd.to_datetime(hist['dt'])
         hist2 = zhicheng.calc_point_2_jw_1(data_lst5d)
         hist3 = hist2[-390:].reset_index(drop=True)
+        hist4 = zhicheng.calc_baixian(data_lst2d)[-390:].reset_index(drop=True)
+
         if not os.path.exists(w_path + code):
             os.makedirs(w_path + code)
             print("新建文件夹", w_path + code)
         merged = pd.merge(hist, hist3, on='dt', how='left')
+        merged = pd.merge(merged, hist4[['dt','baijiao']], on='dt', how='left')
         merged.to_csv(w_path+code+'/'+csvs[i].split('/')[-1])
         print(csvs[i],'计算完成')
 
@@ -101,8 +105,13 @@ def point_calc_hist_1d(code,f_path="./data_server/",w_path="./data_ready/"):
 
 
 if __name__ == "__main__":
-    # parse_tdx_rawdata_1d(
-    #     r_path="./data_tdx_raw/74#TQQQ.txt", code="TQQQ", w_path="./data_server/"
-    # )
-    point_calc_hist_1d(code = 'TQQQ')
+    # gp = 'TQQQ'
+    # gps=['TSLA','PDD','NVDA','AAPL']
+    # gps=['AMD','BABA','GOOGL','MSFT']
+    gps = ['MSFT']
+    for gp in gps:
+        parse_tdx_rawdata_1d(
+            r_path="./data_tdx_raw/74#"+gp+".txt", code=gp, w_path="./data_server/"
+        )
+        point_calc_hist_1d(code = gp)
     # print(1)

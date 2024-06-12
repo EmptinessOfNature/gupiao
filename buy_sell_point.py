@@ -4,7 +4,7 @@ import akshare as ak
 import glob, os
 import json
 import pandas as pd
-
+import math
 
 class ZhiCheng:
     def const_1(self, X_in, Y, Z):
@@ -210,9 +210,11 @@ class ZhiCheng:
                     res, CONST_dict = self.xinhao(
                         close[0:j], low[0:j], high[0:j], volme[0:j], CONST_dict
                     )
+                    # baixian = self.calc_baixian(close[0:j],low[0:j], high[0:j])
                     # res2 = self.xinhao_jw(close[0:j], low[0:j], high[0:j], volme[0:j])
                     for k in res.keys():
                         data_1d.loc[j, k] = res[k]
+                    # data_1d.loc[j,'baixian']=baixian
                     # for k in res2.keys():
                     #     data_1d.loc[j,k] = res2[k]
                     if sum(res.values()) > 0:
@@ -247,6 +249,24 @@ class ZhiCheng:
         merged['jw30'].ffill(inplace=True)
         return merged
 
+    def calc_baixian(self,ret):
+        NA=80;
+        M1A=19;
+        M2A=3;
+        CLOSE = ret["close"].astype("float")
+        HIGH = ret["high"].astype("float")
+        LOW = ret["low"].astype("float")
+        ret.dt = pd.to_datetime(ret.dt)
+        for j in range(len(CLOSE)):  # 遍历每一分钟
+            if j == 0:
+                continue
+            RSV=(CLOSE[0:j]-LLV(LOW[0:j],NA))/(HHV(HIGH[0:j],NA)-LLV(LOW[0:j],NA))*100;
+            K=SMA(RSV,M1A,1);
+            D=SMA(K,M2A,1);
+            NOTEXTDX=SMA(K,M2A,1);
+            baijiao=math.atan((SMA(K,M2A,1)/REF(SMA(K,M2A,1),1)-1)[-1]*100)*180/3.1416;
+            ret.loc[j,'baijiao'] = baijiao
+        return ret
 
 
 if __name__ == "__main__":
