@@ -276,5 +276,5 @@ if __name__ == "__main__":
     hist.columns = ["dt", "open", "close", "high", "low", "vol", "cje", "zxj"]
     zhicheng = ZhiCheng()
     ret = zhicheng.calc_point(hist, date_mode="ib")
-    ret2 = zhicheng.calc_point_2_jw_1(ret)
-    print(ret2)
+    # ret2 = zhicheng.calc_point_2_jw_1(ret)
+    # print(ret2)

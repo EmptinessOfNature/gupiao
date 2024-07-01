@@ -1,0 +1,20 @@
+from time import sleep
+from longport.openapi import QuoteContext, Config, SubType, PushQuote
+def on_quote(symbol: str, quote: PushQuote):
+    print(symbol, quote)
+config = Config(app_key = "605e162381fc6cfe573d0a1dff24e610", app_secret = "4b5f05d13ca8e65dc4c6a51c40144d0e7473c1762d32f8a70c4d73d8757ed4b2", access_token = "m_eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJsb25nYnJpZGdlIiwic3ViIjoiYWNjZXNzX3Rva2VuIiwiZXhwIjoxNzIxMjI2MDczLCJpYXQiOjE3MTM0NTAwNzMsImFrIjoiNjA1ZTE2MjM4MWZjNmNmZTU3M2QwYTFkZmYyNGU2MTAiLCJhYWlkIjoyMDI5NTYwOSwiYWMiOiJsYl9wYXBlcnRyYWRpbmciLCJtaWQiOjExODk2MTg4LCJzaWQiOiJCYXNpVDNRc1dMcTZBWlZzTEgvMHJnPT0iLCJibCI6MywidWwiOjAsImlrIjoibGJfcGFwZXJ0cmFkaW5nXzIwMjk1NjA5In0.3NDbU8gHvIvRJ5nAEIcu1g63czWUi6R5VJo5yWoRo5d0kij_5Xy5_SvdDdnbvVEu7T_GujHGA2x_ptTD72Zgj_xOE0oDauGzEZKuCaXAR7Gs9dMnEPM-Gb4P9RV4Zg_Q-PBQXYSWx9UM2EIfCwjfHq2sWk2ACGl70DTwVh-C1N_yvjqxfdNWAg6l-bL-HaZHl_RwWzJ6udw7h2lO8I6bT74k3nqeMxskh5pK_ftZDrR3eYUbrzf0CR5_F38trGi4Txb5ggqKCyJnbkonmGkR7AHMoG8NloqwlGrxlqUIjseZdgd3mWyBIY8bS_iFv7WeTxwTKdId9y1l0-0B0QGWn7tvVrWcHEyQ2i9W54yzKQL2XmAr-t88Y5ngHOWuHZ8vCiL17ppsJbQ3tMGKpcH0qZHroW6H6IToWGVDoTXob_Lacn4Jjsd3DsgivHa8fOknx5fZB4n8N6JYFnx40NPl4jMrIZIEkEODuS8ScI4aqOWduXGpCut_6jDTUHwvf9kjRETUUmsNJh7mI3kG5oqc_EXtPt1ekQOSen-b18J0XnV1pQNwaQKv1OQzRUjSqD2UMFTSqbd9MeICrHTdufKD1jz-ib52xxt_XVV4qe-P7pS4jB5dSxejFC22zkJ-tNNIckl50tGbYMUaGRC6e-bYl9NpCVDcxAJ5QWpSCLCn7Lw")
+
+ctx = QuoteContext(config)
+ctx.set_on_quote(on_quote)
+symbols = ["700.HK", "AAPL.US", "TSLA.US", "NFLX.US"]
+ctx.subscribe(symbols, [SubType.Quote],False)
+sleep(30)
+ctx.unsubscribe(symbols, [SubType.Quote])
+
+from longport.openapi import QuoteContext, Config, Period, AdjustType
+
+ctx = QuoteContext(config)
+
+resp = ctx.candlesticks(
+    "AAPL.US", Period.Min_1, 1, AdjustType.NoAdjust)
+print(resp)
