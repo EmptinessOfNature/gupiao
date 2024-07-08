@@ -37,16 +37,45 @@ def huice_1d(data,first_cash):
     for i in range(len(data)):
         if i==0:
             act_init_1d(data,i,first_cash)
+            sell_no_mod_2 = 0
         else:
             act_init_1line(data,i)
         if data.loc[i,'buy_signal']==1:
-            act_buy()
+            act_buy(data,i,first_cash)
+            print(1)
+        if data.loc[i,'sell_signal']==1:
+            if sell_no_mod_2==0:
+                act_sell_1half(data,i)
+                print(1)
+            else:
+                act_sell_2half()
+            sell_no_mod_2 = 1 - sell_no_mod_2
+        if i==390-3:
+            act_sell_2half()
 
+def act_sell_1half(data,i):
+    all_chicang = data.loc[i,'chicang'].split(';')[0:-1]
+    chicang_prices = [float(j.split(':')[0]) for j in all_chicang]
+    chicang_nums = [float(j.split(':')[1]) for j in all_chicang]
+    sell_nums = [(float(j)/2).__ceil__() for j in chicang_nums]
+    sell_cash = 0
+    profit = 0
+    for j in range(len(all_chicang)):
+        data.loc[i,'sell_detail'] += str(data.loc[i,'open'])+':'+str(sell_nums[j]) +';'
+        sell_cash += data.loc[i,'open'] * sell_nums[j]
+        data.loc[i, 'chicang'] = str(chicang_prices[j]) + ':' + str(chicang_nums[j]-sell_nums[j]) + ';'
+        profit += (data.loc[i,'open'] - chicang_prices[j]) * sell_nums[j]
+    data.loc[i, 'cash'] = data.loc[i, 'cash']+sell_cash
+    data.loc[i, 'profit'] = profit
+
+
+def act_sell_2half():
+    all_chicang = data.loc[i, 'chicang'].split(';')
 def act_buy(data,i,first_cash):
     buy_amt = first_cash//2//data.loc[i,'open']
     data.loc[i, 'cash'] =  data.loc[i,'cash'] - buy_amt*data.loc[i,'open']
-    data.loc[i,'chicang']+=(str(data.loc[i,'open'])+':'+str(buy_amt) +';')
-    # data.loc[i,'buy_detail'].append([data.loc[i,'open'],buy_amt])
+    data.loc[i,'chicang']+= str(data.loc[i,'open'])+':'+str(buy_amt) +';'
+    data.loc[i,'buy_detail']+= str(data.loc[i,'open'])+':'+str(buy_amt) +';'
 
 
 def act_init_1d(data,i,first_cash):
@@ -58,13 +87,10 @@ def act_init_1d(data,i,first_cash):
 
 def act_init_1line(data,i):
     data.loc[i,'cash']=data.loc[i-1,'cash']
-    data.loc[i,'chicang']=data.loc[i-1,'cash']
+    data.loc[i,'chicang']=data.loc[i-1,'chicang']
     data.loc[i,'buy_detail'] = ""
     data.loc[i,'sell_detail']= ""
     data.loc[i,'profit']=0
-
-def act_buy():
-    pass
 
 if __name__=='__main__':
     f_path = './data_ready/'
