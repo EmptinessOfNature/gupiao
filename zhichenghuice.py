@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import numpy as np
 
 
 
@@ -54,6 +55,31 @@ def huice_1d(data,first_cash):
         if i==390-3:
             act_sell_2half(data,i)
 
+def act_sell_zhiying(data,i,zhiying_diff):
+    max_zhiying_prices = data.loc[i, 'max_zhiying_prices'].split(';')[0:-1]
+    all_chicang = data.loc[i, 'chicang'].split(';')[0:-1]
+    chicang_prices = [float(j.split(':')[0]) for j in all_chicang]
+    chicang_nums = [float(j.split(':')[1]) for j in all_chicang]
+    sell_nums = [0] * len(all_chicang)
+    sell_cash=0
+    profit=0
+    for j in range(len(all_chicang)):
+        if max_zhiying_prices[j]-data.loc[i,'open']>=zhiying_diff:
+            sell_nums[j] = chicang_nums[j]
+            chicang_nums[j]=0
+            sell_cash+=sell_nums[j]*data.loc[i,'open']
+            profit += (data.loc[i, 'open'] - chicang_prices[j]) * sell_nums[j]
+            data.loc[i, 'sell_detail'] += str(data.loc[i, 'open']) + ':' + str(sell_nums[j]) + ';'
+    data.loc[i, 'cash'] = data.loc[i, 'cash'] + sell_cash
+    data.loc[i, 'profit'] = profit
+    data.loc[i,'chicang']=''
+
+    for j in range(len(chicang_nums)):
+        if chicang_nums[j]!=0:
+            data.loc[i, 'chicang']+=str(chicang_prices[j])+':'+str(chicang_nums[j])+';'
+
+
+
 def act_sell_1half(data,i):
     if data.loc[i,'chicang']=='':
         return
@@ -97,7 +123,7 @@ def act_buy(data,i,first_cash):
         data.loc[i, 'cash'] =  data.loc[i,'cash'] - buy_amt*data.loc[i,'open']
         data.loc[i,'chicang']+= str(data.loc[i,'open'])+':'+str(buy_amt) +';'
         data.loc[i,'buy_detail']+= str(data.loc[i,'open'])+':'+str(buy_amt) +';'
-
+        data.loc[i, 'max_zhiying_prices'] += str(data.loc[i,'open'])+ ';'
 
 def act_init_1d(data,i,first_cash):
     data.loc[i,'cash']=first_cash
@@ -105,6 +131,7 @@ def act_init_1d(data,i,first_cash):
     data.loc[i,'buy_detail'] = ""
     data.loc[i,'sell_detail']= ""
     data.loc[i,'profit']=0
+    data.loc[i,'max_zhiying_prices']=""
 
 def act_init_1line(data,i):
     data.loc[i,'cash']=data.loc[i-1,'cash']
@@ -112,6 +139,18 @@ def act_init_1line(data,i):
     data.loc[i,'buy_detail'] = ""
     data.loc[i,'sell_detail']= ""
     data.loc[i,'profit']=0
+    data.loc[i, 'max_zhiying_prices']=data.loc[i-1, 'max_zhiying_prices']
+        # 计算止盈价格
+    if data.loc[i,'max_zhiying_prices']!='':
+        max_zhiying_prices = data.loc[i, 'max_zhiying_prices'].split(';')[0:-1]
+        max_zhiying_prices = [float(j) for j in max_zhiying_prices]
+        data.loc[i, 'max_zhiying_prices']=''
+        for k in range(len(max_zhiying_prices)):
+            if float(data.loc[i,'open']>max_zhiying_prices[k]):
+                max_zhiying_prices[k]=data.loc[i,'open']
+            data.loc[i, 'max_zhiying_prices']+=str(max_zhiying_prices[k])+';'
+
+
 
 if __name__=='__main__':
     f_path = './data_ready/'
